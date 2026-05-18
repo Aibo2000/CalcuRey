@@ -3,7 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CalcuRey — Calculadora de Franquicia Fronteriza</title>
+
+<!-- SEO BÁSICO -->
+<title>CalcuRey — Calculadora de Franquicia Aduanal Reynosa McAllen</title>
+<meta name="description" content="Calcula gratis cuánto puedes cruzar de McAllen a Reynosa sin pagar impuestos. Franquicia aduanal, temporada Paisano, impuestos de aduana y documentos necesarios.">
+<meta name="keywords" content="calculadora franquicia aduanal, cruzar McAllen Reynosa, impuestos aduana frontera, franquicia fiscal frontera, cuanto puedo cruzar McAllen, aduana Reynosa, programa Paisano, franquicia fronteriza Tamaulipas">
+<meta name="author" content="CalcuRey">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://calcu-rey.vercel.app/">
+
+<!-- GEO SEO - Le dice a Google que es para Reynosa -->
+<meta name="geo.region" content="MX-TAM">
+<meta name="geo.placename" content="Reynosa, Tamaulipas, México">
+<meta name="geo.position" content="26.0924;-98.2784">
+<meta name="ICBM" content="26.0924, -98.2784">
+
+<!-- OPEN GRAPH (para compartir en Facebook, WhatsApp, Instagram) -->
+<meta property="og:title" content="CalcuRey — ¿Cuánto puedes cruzar de McAllen sin pagar impuestos?">
+<meta property="og:description" content="Calcula gratis tu franquicia aduanal. Sabe exactamente cuánto puedes traer de McAllen a Reynosa sin pagar impuestos en la aduana.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calcu-rey.vercel.app/">
+<meta property="og:locale" content="es_MX">
+<meta property="og:site_name" content="CalcuRey">
+
+<!-- TWITTER CARD -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CalcuRey — Calculadora de Franquicia Fronteriza Reynosa">
+<meta name="twitter:description" content="Calcula gratis cuánto puedes cruzar de McAllen a Reynosa sin pagar impuestos en aduana.">
+
+<!-- SCHEMA.ORG (datos estructurados para Google) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "CalcuRey",
+  "description": "Calculadora gratuita de franquicia aduanal para cruzar de McAllen a Reynosa. Calcula impuestos, franquicia familiar y documentos necesarios para pasar por la aduana mexicana.",
+  "url": "https://calcu-rey.vercel.app/",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "MXN"
+  },
+  "areaServed": {
+    "@type": "City",
+    "name": "Reynosa",
+    "containedInPlace": {
+      "@type": "State",
+      "name": "Tamaulipas",
+      "containedInPlace": {
+        "@type": "Country",
+        "name": "México"
+      }
+    }
+  }
+}
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -92,6 +149,8 @@
   .tip { background: rgba(0,200,150,0.06); border-left: 3px solid var(--verde); border-radius: 0 10px 10px 0; padding: 12px 14px; font-size: 12px; color: var(--text-sub); line-height: 1.6; margin-top: 16px; }
   .section-hidden { display: none; }
   .exchange-note { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 8px; }
+  /* SEO TEXT - visible para Google, discreto para usuarios */
+  .seo-text { font-size: 12px; color: var(--text-dim); line-height: 1.7; padding: 20px 0 10px; text-align: center; }
 </style>
 </head>
 <body>
@@ -181,6 +240,8 @@
       <button class="btn-primary" onclick="resetApp()">Hacer otro cálculo</button>
       <button class="btn-secondary" onclick="guardarHistorial()">💾 Guardar en mi historial</button>
     </div>
+    <!-- SEO TEXT para Google -->
+    <p class="seo-text">CalcuRey es una calculadora gratuita de franquicia aduanal para residentes y visitantes de Reynosa, Tamaulipas que cruzan a McAllen, Texas. Calcula cuánto puedes importar sin pagar impuestos según las reglas oficiales de la ANAM y el Programa Paisano 2025.</p>
   </div>
   <div id="tab-historial" class="section-hidden">
     <div class="card">
@@ -215,7 +276,17 @@
   <div class="exchange-note" id="exchangeNote"></div>
 </div>
 <script>
-  const TC = 17.2;
+  let TC = 17.2;
+  // Obtener tipo de cambio real de Banxico via API gratuita
+  fetch("https://api.exchangerate-api.com/v4/latest/USD")
+    .then(r => r.json())
+    .then(data => {
+      TC = data.rates.MXN;
+      document.getElementById("exchangeNote").textContent = `Tipo de cambio actual: $1 USD = $${TC.toFixed(2)} MXN · Fuente: ExchangeRate-API`;
+    })
+    .catch(() => {
+      document.getElementById("exchangeNote").textContent = `Tipo de cambio referencial: $1 USD = $${TC} MXN`;
+    });
   let state = { residente: null, personas: null, monto: 0 };
   let historial = JSON.parse(localStorage.getItem('calcurey_historial') || '[]');
   function isTemporadaPaisano() {
