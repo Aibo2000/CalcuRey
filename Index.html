@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalcuRey — Calculadora de Franquicia Fronteriza</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #00C896;
+    --verde-dark: #00A07A;
+    --verde-glow: rgba(0,200,150,0.18);
+    --azul: #0A1628;
+    --azul-mid: #112240;
+    --azul-card: #0D1E38;
+    --azul-border: rgba(0,200,150,0.2);
+    --text-main: #F0F6FF;
+    --text-sub: #7A9BB5;
+    --text-dim: #3E5A73;
+    --rojo: #FF5B5B;
+    --amarillo: #FFD166;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--azul); color: var(--text-main); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(0,200,150,0.08) 0%, transparent 60%), radial-gradient(ellipse 40% 30% at 10% 80%, rgba(0,100,200,0.06) 0%, transparent 50%); pointer-events: none; z-index: 0; }
+  .app { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 20px 40px; }
+  header { padding: 32px 0 24px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: var(--font-head); font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); }
+  .logo span { color: var(--verde); }
+  .logo-sub { font-size: 11px; color: var(--text-sub); font-weight: 300; letter-spacing: 0.06em; margin-top: 2px; text-transform: uppercase; }
+  .temporada-badge { font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 20px; border: 1px solid var(--azul-border); background: var(--azul-card); color: var(--text-sub); display: flex; align-items: center; gap: 5px; }
+  .temporada-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
+  .temporada-badge.active { border-color: var(--verde); color: var(--verde); }
+  .temporada-badge.active .dot { background: var(--verde); box-shadow: 0 0 6px var(--verde); }
+  .steps-indicator { display: flex; gap: 6px; margin-bottom: 28px; }
+  .step-dot { height: 3px; border-radius: 2px; flex: 1; background: var(--azul-mid); transition: background 0.3s ease; }
+  .step-dot.active { background: var(--verde); }
+  .step-dot.done { background: var(--verde-dark); }
+  .card { background: var(--azul-card); border: 1px solid var(--azul-border); border-radius: 20px; padding: 28px 24px; margin-bottom: 16px; animation: fadeUp 0.35s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .card-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--verde); margin-bottom: 8px; }
+  .card-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; line-height: 1.2; }
+  .card-desc { font-size: 13px; color: var(--text-sub); line-height: 1.6; margin-bottom: 20px; }
+  .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+  .toggle-btn { background: var(--azul-mid); border: 1.5px solid var(--azul-border); border-radius: 12px; padding: 14px 12px; color: var(--text-sub); font-family: var(--font-body); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-align: center; }
+  .toggle-btn:hover { border-color: var(--verde); color: var(--text-main); }
+  .toggle-btn.selected { background: var(--verde-glow); border-color: var(--verde); color: var(--verde); }
+  .toggle-4 { grid-template-columns: repeat(4, 1fr); }
+  .slider-wrap { margin-top: 4px; }
+  .slider-value { font-family: var(--font-head); font-size: 42px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; line-height: 1; }
+  .slider-value span { font-size: 20px; color: var(--verde); font-weight: 600; }
+  .slider-mxn { font-size: 13px; color: var(--text-sub); margin-bottom: 16px; }
+  input[type=range] { width: 100%; -webkit-appearance: none; height: 4px; border-radius: 2px; background: var(--azul-mid); outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--verde); box-shadow: 0 0 10px var(--verde-glow); cursor: pointer; }
+  .result-card { border-radius: 20px; padding: 28px 24px; margin-bottom: 16px; animation: fadeUp 0.4s ease both; }
+  .result-ok { background: linear-gradient(135deg, rgba(0,200,150,0.12) 0%, rgba(0,200,150,0.04) 100%); border: 1.5px solid var(--verde); }
+  .result-warn { background: linear-gradient(135deg, rgba(255,209,102,0.1) 0%, rgba(255,209,102,0.03) 100%); border: 1.5px solid var(--amarillo); }
+  .result-bad { background: linear-gradient(135deg, rgba(255,91,91,0.1) 0%, rgba(255,91,91,0.03) 100%); border: 1.5px solid var(--rojo); }
+  .result-icon { font-size: 36px; margin-bottom: 12px; }
+  .result-title { font-family: var(--font-head); font-size: 22px; font-weight: 800; margin-bottom: 6px; line-height: 1.2; }
+  .result-desc { font-size: 13px; color: var(--text-sub); line-height: 1.6; margin-bottom: 20px; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.06); font-size: 13px; }
+  .result-row-label { color: var(--text-sub); }
+  .result-row-value { font-weight: 500; color: var(--text-main); }
+  .result-row-value.verde { color: var(--verde); }
+  .result-row-value.rojo { color: var(--rojo); }
+  .result-row-value.amarillo { color: var(--amarillo); }
+  .docs-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .doc-item { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 12px; font-size: 13px; color: var(--text-sub); }
+  .doc-icon { width: 28px; height: 28px; border-radius: 8px; background: var(--verde-glow); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .agencia-card { background: var(--azul-card); border: 1px solid var(--azul-border); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+  .agencia-logo { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #1a3a5c, #0d2035); border: 1px solid var(--azul-border); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .agencia-info { flex: 1; }
+  .agencia-name { font-size: 14px; font-weight: 500; color: var(--text-main); margin-bottom: 2px; }
+  .agencia-sub { font-size: 12px; color: var(--text-sub); }
+  .agencia-btn { font-size: 12px; font-weight: 500; color: var(--verde); background: var(--verde-glow); border: 1px solid var(--verde); border-radius: 8px; padding: 6px 12px; cursor: pointer; flex-shrink: 0; font-family: var(--font-body); }
+  .historial-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+  .historial-fecha { color: var(--text-sub); }
+  .historial-monto { font-weight: 500; }
+  .historial-status { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+  .status-ok { background: rgba(0,200,150,0.15); color: var(--verde); }
+  .status-bad { background: rgba(255,91,91,0.15); color: var(--rojo); }
+  .btn-primary { width: 100%; background: var(--verde); color: #001a10; border: none; border-radius: 14px; padding: 16px; font-family: var(--font-head); font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; letter-spacing: 0.01em; }
+  .btn-primary:hover { background: #00e0aa; box-shadow: 0 4px 20px rgba(0,200,150,0.3); transform: translateY(-1px); }
+  .btn-secondary { width: 100%; background: transparent; color: var(--text-sub); border: 1px solid var(--azul-border); border-radius: 14px; padding: 14px; font-family: var(--font-body); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; margin-top: 10px; }
+  .btn-secondary:hover { color: var(--text-main); border-color: var(--text-sub); }
+  .tabs { display: flex; gap: 4px; background: var(--azul-card); border: 1px solid var(--azul-border); border-radius: 14px; padding: 4px; margin-bottom: 20px; }
+  .tab { flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 500; text-align: center; cursor: pointer; color: var(--text-sub); transition: all 0.2s ease; border: none; background: transparent; font-family: var(--font-body); }
+  .tab.active { background: var(--azul-mid); color: var(--text-main); }
+  .tip { background: rgba(0,200,150,0.06); border-left: 3px solid var(--verde); border-radius: 0 10px 10px 0; padding: 12px 14px; font-size: 12px; color: var(--text-sub); line-height: 1.6; margin-top: 16px; }
+  .section-hidden { display: none; }
+  .exchange-note { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <div class="logo">Calcu<span>Rey</span></div>
+      <div class="logo-sub">Frontera Reynosa · McAllen</div>
+    </div>
+    <div class="temporada-badge" id="temporadaBadge">
+      <div class="dot"></div>
+      <span id="temporadaText">Cargando...</span>
+    </div>
+  </header>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('calcular')">Calcular</button>
+    <button class="tab" onclick="showTab('historial')">Historial</button>
+    <button class="tab" onclick="showTab('info')">Info</button>
+  </div>
+  <div id="tab-calcular">
+    <div class="steps-indicator">
+      <div class="step-dot active" id="sd1"></div>
+      <div class="step-dot" id="sd2"></div>
+      <div class="step-dot" id="sd3"></div>
+      <div class="step-dot" id="sd4"></div>
+    </div>
+    <div id="step1" class="card">
+      <div class="card-label">Paso 1 de 4</div>
+      <div class="card-title">¿Eres residente de la franja fronteriza?</div>
+      <div class="card-desc">Reynosa, Matamoros, Nuevo Laredo y otras ciudades fronterizas tienen reglas distintas.</div>
+      <div class="toggle-group">
+        <button class="toggle-btn" onclick="select('residente','si',this)">✅ Sí vivo aquí</button>
+        <button class="toggle-btn" onclick="select('residente','no',this)">🧳 Soy visitante</button>
+      </div>
+    </div>
+    <div id="step2" class="card section-hidden">
+      <div class="card-label">Paso 2 de 4</div>
+      <div class="card-title">¿Cuántas personas van en el vehículo?</div>
+      <div class="card-desc">Las franquicias familiares se pueden acumular si viajan juntos en el mismo transporte.</div>
+      <div class="toggle-group toggle-4">
+        <button class="toggle-btn" onclick="select('personas','1',this)">1</button>
+        <button class="toggle-btn" onclick="select('personas','2',this)">2</button>
+        <button class="toggle-btn" onclick="select('personas','3',this)">3</button>
+        <button class="toggle-btn" onclick="select('personas','4',this)">4+</button>
+      </div>
+      <div class="tip">💡 Si son 3 o más en el mismo carro, el tope máximo en conjunto es $400 USD (residentes fronterizos).</div>
+    </div>
+    <div id="step3" class="card section-hidden">
+      <div class="card-label">Paso 3 de 4</div>
+      <div class="card-title">¿Cuánto gastaste en McAllen?</div>
+      <div class="card-desc">Mueve el slider o escribe el monto total de tus compras en dólares.</div>
+      <div class="slider-wrap">
+        <div class="slider-value"><span>$</span><span id="sliderVal">0</span> <span style="font-size:16px;color:var(--text-sub)">USD</span></div>
+        <div class="slider-mxn" id="sliderMXN">≈ $0 MXN</div>
+        <input type="range" id="montoSlider" min="0" max="2000" step="10" value="0" oninput="updateSlider(this.value)">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:6px"><span>$0</span><span>$500</span><span>$1,000</span><span>$2,000</span></div>
+      </div>
+      <button class="btn-primary" style="margin-top:20px" onclick="calcular()">Calcular mi franquicia →</button>
+    </div>
+    <div id="step4" class="section-hidden">
+      <div id="resultCard" class="result-card">
+        <div class="result-icon" id="resultIcon"></div>
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-desc" id="resultDesc"></div>
+        <div id="resultRows"></div>
+      </div>
+      <div class="card" id="docsCard">
+        <div class="card-label">Documentos que debes llevar</div>
+        <div class="card-title" style="font-size:16px;margin-bottom:14px">Lo que necesitas al cruzar</div>
+        <div class="docs-list" id="docsList"></div>
+      </div>
+      <div id="agenciaSection" class="section-hidden">
+        <div class="card">
+          <div class="card-label">Agencia recomendada</div>
+          <div class="card-title" style="font-size:15px;margin-bottom:4px">¿Necesitas un agente aduanal?</div>
+          <div style="font-size:13px;color:var(--text-sub);margin-bottom:12px">Tu monto requiere trámite profesional. Te conectamos con expertos locales.</div>
+          <div class="agencia-card">
+            <div class="agencia-logo">🏛️</div>
+            <div class="agencia-info">
+              <div class="agencia-name">Aduanas Reynosa Pro</div>
+              <div class="agencia-sub">Patrocinador oficial · Servicio express</div>
+            </div>
+            <button class="agencia-btn">Contactar</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="resetApp()">Hacer otro cálculo</button>
+      <button class="btn-secondary" onclick="guardarHistorial()">💾 Guardar en mi historial</button>
+    </div>
+  </div>
+  <div id="tab-historial" class="section-hidden">
+    <div class="card">
+      <div class="card-label">Tus cruces recientes</div>
+      <div class="card-title" style="font-size:16px;margin-bottom:16px">Historial de cálculos</div>
+      <div id="historialList"><div style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:13px">Aún no tienes cálculos guardados.<br>Haz tu primer cálculo y guárdalo aquí.</div></div>
+    </div>
+  </div>
+  <div id="tab-info" class="section-hidden">
+    <div class="card">
+      <div class="card-label">Franquicia 2025</div>
+      <div class="card-title" style="font-size:16px;margin-bottom:14px">Reglas oficiales ANAM</div>
+      <div class="result-row"><span class="result-row-label">Residente fronterizo (normal)</span><span class="result-row-value verde">$150 USD/día</span></div>
+      <div class="result-row"><span class="result-row-label">Residente fronterizo (Paisano)</span><span class="result-row-value verde">$300 USD</span></div>
+      <div class="result-row"><span class="result-row-label">Visitante vía terrestre</span><span class="result-row-value verde">$300 USD</span></div>
+      <div class="result-row"><span class="result-row-label">Visitante temporada Paisano</span><span class="result-row-value verde">$500 USD</span></div>
+      <div class="result-row"><span class="result-row-label">3+ personas mismo vehículo</span><span class="result-row-value amarillo">máx $400 USD total</span></div>
+      <div class="result-row"><span class="result-row-label">Impuesto por excedente</span><span class="result-row-value rojo">19% sobre excedente</span></div>
+      <div class="result-row"><span class="result-row-label">Excedente máx autodeclaración</span><span class="result-row-value">hasta $3,000 USD</span></div>
+      <div class="tip" style="margin-top:16px">📋 Fuente: Agencia Nacional de Aduanas de México (ANAM) · actualizado 2025</div>
+    </div>
+    <div class="card">
+      <div class="card-label">¿Qué NO puedes cruzar?</div>
+      <div class="docs-list">
+        <div class="doc-item"><div class="doc-icon">🍺</div>Bebidas alcohólicas y cerveza</div>
+        <div class="doc-item"><div class="doc-icon">🚬</div>Tabacos y cigarros</div>
+        <div class="doc-item"><div class="doc-icon">⛽</div>Combustible automotriz</div>
+        <div class="doc-item"><div class="doc-icon">👗</div>Ropa usada (no parte de equipaje)</div>
+      </div>
+    </div>
+  </div>
+  <div class="exchange-note" id="exchangeNote"></div>
+</div>
+<script>
+  const TC = 17.2;
+  let state = { residente: null, personas: null, monto: 0 };
+  let historial = JSON.parse(localStorage.getItem('calcurey_historial') || '[]');
+  function isTemporadaPaisano() {
+    const hoy = new Date(); const m = hoy.getMonth() + 1; const d = hoy.getDate();
+    if ((m === 11 && d >= 28) || m === 12 || (m === 1 && d <= 12)) return true;
+    if (m === 3 || (m === 4 && d <= 15)) return true;
+    if (m === 7 || m === 8) return true;
+    return false;
+  }
+  const paisano = isTemporadaPaisano();
+  const badge = document.getElementById('temporadaBadge');
+  const badgeText = document.getElementById('temporadaText');
+  if (paisano) { badge.classList.add('active'); badgeText.textContent = 'Temporada Paisano'; }
+  else { badgeText.textContent = 'Temporada normal'; }
+  document.getElementById('exchangeNote').textContent = `Tipo de cambio referencial: $1 USD = $${TC} MXN`;
+  function showTab(name) {
+    ['calcular','historial','info'].forEach(t => { document.getElementById('tab-'+t).classList.add('section-hidden'); });
+    document.getElementById('tab-'+name).classList.remove('section-hidden');
+    document.querySelectorAll('.tab').forEach((t,i) => { t.classList.toggle('active', ['calcular','historial','info'][i] === name); });
+    if (name === 'historial') renderHistorial();
+  }
+  function select(field, val, btn) {
+    state[field] = val;
+    btn.closest('.toggle-group').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    setTimeout(() => nextStep(field), 300);
+  }
+  function nextStep(field) {
+    if (field === 'residente') { document.getElementById('step2').classList.remove('section-hidden'); updateStepDots(2); }
+    else if (field === 'personas') { document.getElementById('step3').classList.remove('section-hidden'); updateStepDots(3); }
+  }
+  function updateStepDots(active) {
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById('sd'+i); dot.classList.remove('active','done');
+      if (i < active) dot.classList.add('done'); else if (i === active) dot.classList.add('active');
+    }
+  }
+  function updateSlider(val) {
+    state.monto = parseInt(val);
+    document.getElementById('sliderVal').textContent = val;
+    document.getElementById('sliderMXN').textContent = `≈ $${(val * TC).toLocaleString('es-MX', {maximumFractionDigits:0})} MXN`;
+  }
+  function calcular() {
+    if (!state.residente || !state.personas) { alert('Por favor responde todas las preguntas primero.'); return; }
+    updateStepDots(4);
+    let franquicia = 0; const n = parseInt(state.personas);
+    if (state.residente === 'si') { if (n >= 3) { franquicia = 400; } else { franquicia = paisano ? 300 : 150; franquicia *= Math.min(n, 2); } }
+    else { franquicia = paisano ? 500 : 300; franquicia *= n; }
+    const monto = state.monto;
+    const excedente = Math.max(0, monto - franquicia);
+    const impuesto = excedente > 0 ? excedente * 0.19 : 0;
+    const necesitaAgente = excedente > 3000;
+    document.getElementById('step1').classList.add('section-hidden');
+    document.getElementById('step2').classList.add('section-hidden');
+    document.getElementById('step3').classList.add('section-hidden');
+    document.getElementById('step4').classList.remove('section-hidden');
+    const rc = document.getElementById('resultCard'); rc.className = 'result-card';
+    let icon, title, desc, cardClass;
+    if (excedente === 0) { icon = '✅'; title = '¡Puedes cruzar sin pagar!'; desc = `Tu compra de $${monto} USD está dentro de tu franquicia de $${franquicia} USD. No pagas impuestos al cruzar.`; cardClass = 'result-ok'; }
+    else if (!necesitaAgente) { icon = '⚠️'; title = 'Te pasaste, pero puedes autodeclararte'; desc = `Excediste tu franquicia por $${excedente.toFixed(0)} USD. Puedes pagar tú mismo en la aduana sin agente.`; cardClass = 'result-warn'; }
+    else { icon = '🏛️'; title = 'Necesitas agente aduanal'; desc = `Tu excedente de $${excedente.toFixed(0)} USD supera los $3,000 USD. Por ley debes contratar un agente aduanal.`; cardClass = 'result-bad'; }
+    rc.classList.add(cardClass);
+    document.getElementById('resultIcon').textContent = icon;
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultDesc').textContent = desc;
+    document.getElementById('resultRows').innerHTML = `
+      <div class="result-row"><span class="result-row-label">Tu franquicia total</span><span class="result-row-value verde">$${franquicia} USD</span></div>
+      <div class="result-row"><span class="result-row-label">Lo que gastaste</span><span class="result-row-value">$${monto} USD</span></div>
+      <div class="result-row"><span class="result-row-label">Excedente</span><span class="result-row-value ${excedente>0?'rojo':'verde'}">$${excedente.toFixed(0)} USD</span></div>
+      ${impuesto > 0 ? `<div class="result-row"><span class="result-row-label">Impuesto a pagar (19%)</span><span class="result-row-value rojo">$${impuesto.toFixed(2)} USD · $${(impuesto*TC).toFixed(0)} MXN</span></div>` : ''}
+      <div class="result-row"><span class="result-row-label">Temporada Paisano activa</span><span class="result-row-value ${paisano?'verde':''}"> ${paisano?'✅ Sí':'❌ No'}</span></div>`;
+    let docs = ['📄 Facturas o comprobantes de compra'];
+    if (excedente > 0) docs.push('📋 Formato de autodeclaración (en aduana)', '💳 Efectivo o tarjeta para pago de impuesto');
+    if (monto > 500) docs.push('🪪 Identificación oficial vigente');
+    if (necesitaAgente) docs.push('📞 Contacto de agente aduanal autorizado');
+    document.getElementById('docsList').innerHTML = docs.map(d => `<div class="doc-item"><div class="doc-icon">${d.split(' ')[0]}</div>${d.substring(d.indexOf(' ')+1)}</div>`).join('');
+    const agSec = document.getElementById('agenciaSection');
+    if (necesitaAgente || excedente > 500) { agSec.classList.remove('section-hidden'); } else { agSec.classList.add('section-hidden'); }
+    state._lastResult = { monto, franquicia, excedente, impuesto, fecha: new Date().toLocaleDateString('es-MX'), ok: excedente === 0 };
+  }
+  function guardarHistorial() {
+    if (!state._lastResult) return;
+    historial.unshift(state._lastResult);
+    if (historial.length > 20) historial = historial.slice(0, 20);
+    localStorage.setItem('calcurey_historial', JSON.stringify(historial));
+    alert('✅ Guardado en tu historial');
+  }
+  function renderHistorial() {
+    const list = document.getElementById('historialList');
+    if (!historial.length) { list.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:13px">Aún no tienes cálculos guardados.<br>Haz tu primer cálculo y guárdalo aquí.</div>'; return; }
+    list.innerHTML = historial.map(h => `<div class="historial-item"><div><div class="historial-monto">$${h.monto} USD</div><div class="historial-fecha">${h.fecha}</div></div><div style="text-align:right"><div class="historial-status ${h.ok?'status-ok':'status-bad'}">${h.ok?'Sin impuesto':'Excedente: $'+h.excedente}</div>${!h.ok ? `<div style="font-size:11px;color:var(--text-sub);margin-top:3px">Impuesto: $${h.impuesto.toFixed(2)} USD</div>` : ''}</div></div>`).join('');
+  }
+  function resetApp() {
+    state = { residente: null, personas: null, monto: 0 };
+    document.getElementById('step1').classList.remove('section-hidden');
+    document.getElementById('step2').classList.add('section-hidden');
+    document.getElementById('step3').classList.add('section-hidden');
+    document.getElementById('step4').classList.add('section-hidden');
+    document.getElementById('montoSlider').value = 0;
+    updateSlider(0);
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+    updateStepDots(1);
+  }
+</script>
+</body>
+</html>
